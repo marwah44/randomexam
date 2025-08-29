@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Quiz App</title>
+    <style>
+        /* Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to right, #f8f9fa, #e9ecef);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        form {
+            background: #fff;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0px 5px 20px rgba(0,0,0,0.15);
+            width: 600px;
+            max-width: 100%;
+        }
+
+        #timer {
+            font-size: 22px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .question {
+            background: #f1f3f5;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            transition: 0.3s ease;
+        }
+
+        .question:hover {
+            background: #e9ecef;
+        }
+
+        .question h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #343a40;
+        }
+
+        label {
+            display: block;
+            margin: 8px 0;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        input[type="radio"] {
+            margin-right: 8px;
+        }
+
+        label:hover {
+            background: #dee2e6;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            background: #007bff;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .result {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .result.fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        #retryBtn {
+    background: #dc3545;
+    color: white;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#retryBtn:hover {
+    background: #b02a37;
+}
+
+    </style>
+</head>
+<body>
+    <form id="form1">
+        <div id="timer"></div>
+        <div id="questions"></div>
+        <button type="submit">Submit</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        class Question {
+            constructor(questionid,questiontitle,queopt1,queopt2,queopt3, answer) {
+                this.questionid = questionid;
+                this.questiontitle = questiontitle;
+                this.queopt1 = queopt1;
+                this.queopt2 = queopt2;
+                this.queopt3 = queopt3;
+                this.answer = answer;
+            }
+        }
+
+        var q1=new Question("q1","what is HTML?","hyper text markup language","hyper text markdown language","hyper text mookup language","hyper text markup language");
+        var q2=new Question("q2","what is CSS?","cascading style sheet","hyper text markdown language","hyper text mookup language","cascading style sheet");
+        var q3=new Question("q3","what is JS?","javascript","typescript","jscript","javascript");
+        var q4=new Question("q4","What does DOM stand for?","Document Object Model","Data Object Method","Desktop Oriented Mode","Document Object Model");
+        var q5=new Question("q5","Which is not a programming language?","Python","HTML","C++","HTML");
+
+        var questionsarr=[q1,q2,q3,q4,q5];
+
+        function getRandomQuestions(arr, num) {
+            let shuffled = [...arr].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, num);
+        }
+
+        var selectedQuestions = getRandomQuestions(questionsarr, 3);
+        var outputtext = "";
+        selectedQuestions.forEach((quest, idx) => {
+    const displayId = `q${idx + 1}`; 
+    outputtext += `
+    <div class="question">
+        <h2>${displayId} : ${quest.questiontitle}</h2>
+        <label><input type="radio" name="${quest.questionid}" value="${quest.queopt1}"> ${quest.queopt1}</label>
+        <label><input type="radio" name="${quest.questionid}" value="${quest.queopt2}"> ${quest.queopt2}</label>
+        <label><input type="radio" name="${quest.questionid}" value="${quest.queopt3}"> ${quest.queopt3}</label>
+    </div>
+    `;
+});
+document.getElementById("questions").innerHTML = outputtext;
+
+
+        var timeLeft = 30;
+        var timer = document.getElementById("timer");
+        var countdown = setInterval(function(){
+            timer.innerHTML = " Time left: " + timeLeft + "s";
+            timeLeft--;
+
+            if(timeLeft < 0){
+                clearInterval(countdown);
+                checkresult();
+            }
+        },1000);
+
+        document.forms["form1"].addEventListener("submit",function(e){
+            e.preventDefault();
+            clearInterval(countdown);
+            checkresult();
+        });
+
+        function checkresult(){
+    var score=0;
+    for(let quest of selectedQuestions)
+    {
+        let selected = document.querySelector(`input[name="${quest.questionid}"]:checked`);
+        if(selected && selected.value == quest.answer){
+            score++;
+        }
+    }
+
+    document.body.removeChild(document.forms["form1"]);
+    var result=document.getElementById("result");
+
+    if(score>=selectedQuestions.length/2)
+    {
+        result.innerHTML=" Your score is "+score+" - You are good!";
+        result.className="result success";
+    }
+    else
+    {
+        result.innerHTML = `
+             Your score is ${score} - Try again!
+            <br><br>
+            <button id="retryBtn"> Try Again</button>
+        `;
+        result.className="result fail";
+
+     
+        document.getElementById("retryBtn").addEventListener("click", function(){
+            location.reload();
+        });
+    }
+}
+
+    </script>
+</body>
+</html>
+
